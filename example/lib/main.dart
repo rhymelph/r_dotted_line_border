@@ -138,7 +138,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 height: 100,
                 decoration: BoxDecoration(
                   border: RDottedLineBorder(
-                    dottedLength: 10,
+                      dottedLength: 10,
                       dottedSpace: 2,
                       top: BorderSide(
                         color: Colors.purple,
