@@ -1,11 +1,11 @@
 name: r_dotted_line_border
 description: A Flutter decoration box package about dotted line border.
-version: 0.1.0
+version: 0.1.1
 homepage: https://github.com/rhymelph/r_dotted_line_border
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
-  flutter: ">=1.17.0 <2.0.0"
+  sdk: '>=2.12.0 <3.0.0'
+  flutter: ">=1.17.0"
 
 dependencies:
   flutter:

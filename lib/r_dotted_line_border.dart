@@ -18,17 +18,13 @@ class RDottedLineBorder extends BoxBorder {
     this.left = BorderSide.none,
     this.dottedLength = 5,
     this.dottedSpace = 3,
-  })  : assert(top != null),
-        assert(right != null),
-        assert(bottom != null),
-        assert(left != null);
+  });
 
   const RDottedLineBorder.fromBorderSide(
     BorderSide side, {
     this.dottedLength = 5,
     this.dottedSpace = 3,
-  })  : assert(side != null),
-        top = side,
+  })  : top = side,
         right = side,
         bottom = side,
         left = side;
@@ -38,9 +34,7 @@ class RDottedLineBorder extends BoxBorder {
     BorderSide horizontal = BorderSide.none,
     this.dottedLength = 5,
     this.dottedSpace = 3,
-  })  : assert(vertical != null),
-        assert(horizontal != null),
-        left = vertical,
+  })  : left = vertical,
         top = horizontal,
         right = vertical,
         bottom = horizontal;
@@ -58,8 +52,6 @@ class RDottedLineBorder extends BoxBorder {
   }
 
   static RDottedLineBorder merge(RDottedLineBorder a, RDottedLineBorder b) {
-    assert(a != null);
-    assert(b != null);
     assert(BorderSide.canMerge(a.top, b.top));
     assert(BorderSide.canMerge(a.right, b.right));
     assert(BorderSide.canMerge(a.bottom, b.bottom));
@@ -107,9 +99,9 @@ class RDottedLineBorder extends BoxBorder {
 
   @override
   void paint(Canvas canvas, Rect rect,
-      {TextDirection textDirection,
+      {TextDirection? textDirection,
       BoxShape shape = BoxShape.rectangle,
-      BorderRadius borderRadius}) {
+      BorderRadius? borderRadius}) {
     if (isUniform) {
       switch (top.style) {
         case BorderStyle.none:
@@ -217,12 +209,6 @@ class RDottedLineBorder extends BoxBorder {
     BorderSide bottom = BorderSide.none,
     BorderSide left = BorderSide.none,
   }) {
-    assert(canvas != null);
-    assert(rect != null);
-    assert(top != null);
-    assert(right != null);
-    assert(bottom != null);
-    assert(left != null);
 
     // We draw the borders as filled shapes, unless the borders are hairline
     // borders, in which case we use PaintingStyle.stroke, with the stroke width
@@ -314,7 +300,7 @@ class RDottedLineBorder extends BoxBorder {
   }
 
   @override
-  BoxBorder add(ShapeBorder other, {bool reversed = false}) {
+  BoxBorder? add(ShapeBorder other, {bool reversed = false}) {
     if (other is RDottedLineBorder &&
         BorderSide.canMerge(top, other.top) &&
         BorderSide.canMerge(right, other.right) &&
