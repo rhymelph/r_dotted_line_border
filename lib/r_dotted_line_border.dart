@@ -8,10 +8,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class RDottedLineBorder extends BoxBorder {
-  final double dottedLength;
-  final double dottedSpace;
-
-  RDottedLineBorder({
+  const RDottedLineBorder({
     this.top = BorderSide.none,
     this.right = BorderSide.none,
     this.bottom = BorderSide.none,
@@ -44,12 +41,22 @@ class RDottedLineBorder extends BoxBorder {
     double width = 1.0,
     double dottedLength = 5,
     double dottedSpace = 3,
+    double strokeAlign = BorderSide.strokeAlignInside,
   }) {
-    final BorderSide side =
-        BorderSide(color: color, width: width, style: BorderStyle.solid);
-    return RDottedLineBorder.fromBorderSide(side,
-        dottedLength: dottedLength, dottedSpace: dottedSpace);
+    final BorderSide side = BorderSide(
+      color: color,
+      width: width,
+      style: BorderStyle.solid,
+      strokeAlign: strokeAlign,
+    );
+    return RDottedLineBorder.fromBorderSide(
+      side,
+      dottedLength: dottedLength,
+      dottedSpace: dottedSpace,
+    );
   }
+  final double dottedLength;
+  final double dottedSpace;
 
   static RDottedLineBorder merge(RDottedLineBorder a, RDottedLineBorder b) {
     assert(BorderSide.canMerge(a.top, b.top));
@@ -70,7 +77,11 @@ class RDottedLineBorder extends BoxBorder {
   @override
   EdgeInsetsGeometry get dimensions {
     return EdgeInsets.fromLTRB(
-        left.width, top.width, right.width, bottom.width);
+      left.width,
+      top.width,
+      right.width,
+      bottom.width,
+    );
   }
 
   bool get _colorIsUniform {
@@ -98,10 +109,13 @@ class RDottedLineBorder extends BoxBorder {
   bool get isUniform => _colorIsUniform && _widthIsUniform && _styleIsUniform;
 
   @override
-  void paint(Canvas canvas, Rect rect,
-      {TextDirection? textDirection,
-      BoxShape shape = BoxShape.rectangle,
-      BorderRadius? borderRadius}) {
+  void paint(
+    Canvas canvas,
+    Rect rect, {
+    TextDirection? textDirection,
+    BoxShape shape = BoxShape.rectangle,
+    BorderRadius? borderRadius,
+  }) {
     if (isUniform) {
       switch (top.style) {
         case BorderStyle.none:
@@ -109,17 +123,24 @@ class RDottedLineBorder extends BoxBorder {
         case BorderStyle.solid:
           switch (shape) {
             case BoxShape.circle:
-              assert(borderRadius == null,
-                  'A borderRadius can only be given for rectangular boxes.');
-              final double width = top.width;
+              assert(
+                borderRadius == null,
+                'A borderRadius can only be given for rectangular boxes.',
+              );
+              // final double width = top.width;
               final Paint paint = top.toPaint();
               // final double radius = (rect.shortestSide - width) / 2.0;
-              Rect inner = rect.deflate(width);
+              Rect inner = rect.inflate(top.strokeOffset * 0.5);
+
               // canvas.drawCircle(rect.center, radius, paint);
               canvas.drawPath(
-                  _buildDashPath(
-                      Path()..addOval(inner), dottedLength, dottedSpace),
-                  paint);
+                _buildDashPath(
+                  Path()..addOval(inner),
+                  dottedLength,
+                  dottedSpace,
+                ),
+                paint,
+              );
               break;
             case BoxShape.rectangle:
               if (borderRadius != null) {
@@ -127,30 +148,25 @@ class RDottedLineBorder extends BoxBorder {
                 final Paint paint = Paint()..color = top.color;
                 final RRect outer = borderRadius.toRRect(rect);
                 final double width = top.width;
-                if (width == 0.0) {
+
+                // top.strokeAn
+                final RRect inner = outer.inflate(top.strokeOffset * 0.5);
+                // canvas.drawDRRect(outer, inner, paint);
+                // print('outer inner');
+                // canvas.drawPath(Path()..addRRect(inner), paint);
+                //
+                canvas.drawPath(
+                  _buildDashPath(
+                    Path()..addRRect(inner),
+                    dottedLength,
+                    dottedSpace,
+                  ),
                   paint
+                    ..isAntiAlias = true
                     ..style = PaintingStyle.stroke
-                    ..strokeWidth = 0.0;
-                  // canvas.drawRRect(outer, paint);
-                  // print('outer');
-                  canvas.drawPath(
-                      _buildDashPath(
-                          Path()..addRRect(outer), dottedLength, dottedSpace),
-                      paint);
-                } else {
-                  final RRect inner = outer.deflate(width);
-                  // canvas.drawDRRect(outer, inner, paint);
-                  // print('outer inner');
-                  // canvas.drawPath(Path()..addRRect(inner), paint);
-                  //
-                  canvas.drawPath(
-                      _buildDashPath(
-                          Path()..addRRect(inner), dottedLength, dottedSpace),
-                      paint
-                        ..isAntiAlias = true
-                        ..style = PaintingStyle.stroke
-                        ..strokeWidth = width);
-                }
+                    ..strokeWidth = width,
+                );
+
                 return;
               }
               // BoxBorder._paintUniformBorderWithRectangle(canvas, rect, top);
@@ -159,9 +175,13 @@ class RDottedLineBorder extends BoxBorder {
               // canvas.drawRect(rect.deflate(width / 2.0), paint);
               // print('rect');
               canvas.drawPath(
-                  _buildDashPath(Path()..addRect(rect.deflate(width / 2.0)),
-                      dottedLength, dottedSpace),
-                  paint);
+                _buildDashPath(
+                  Path()..addRect(rect.deflate(width / 2.0)),
+                  dottedLength,
+                  dottedSpace,
+                ),
+                paint,
+              );
               break;
           }
           return;
@@ -172,7 +192,8 @@ class RDottedLineBorder extends BoxBorder {
       if (borderRadius != null) {
         throw FlutterError.fromParts(<DiagnosticsNode>[
           ErrorSummary(
-              'A borderRadius can only be given for a uniform Border.'),
+            'A borderRadius can only be given for a uniform Border.',
+          ),
           ErrorDescription('The following is not uniform:'),
           if (!_colorIsUniform) ErrorDescription('BorderSide.color'),
           if (!_widthIsUniform) ErrorDescription('BorderSide.width'),
@@ -185,7 +206,8 @@ class RDottedLineBorder extends BoxBorder {
       if (shape != BoxShape.rectangle) {
         throw FlutterError.fromParts(<DiagnosticsNode>[
           ErrorSummary(
-              'A Border can only be drawn as a circle if it is uniform'),
+            'A Border can only be drawn as a circle if it is uniform',
+          ),
           ErrorDescription('The following is not uniform:'),
           if (!_colorIsUniform) ErrorDescription('BorderSide.color'),
           if (!_widthIsUniform) ErrorDescription('BorderSide.width'),
@@ -197,8 +219,14 @@ class RDottedLineBorder extends BoxBorder {
 
     // print('paint border');
 
-    paintDottedBorder(canvas, rect,
-        top: top, right: right, bottom: bottom, left: left);
+    paintDottedBorder(
+      canvas,
+      rect,
+      top: top,
+      right: right,
+      bottom: bottom,
+      left: left,
+    );
   }
 
   void paintDottedBorder(
@@ -209,7 +237,6 @@ class RDottedLineBorder extends BoxBorder {
     BorderSide bottom = BorderSide.none,
     BorderSide left = BorderSide.none,
   }) {
-
     // We draw the borders as filled shapes, unless the borders are hairline
     // borders, in which case we use PaintingStyle.stroke, with the stroke width
     // specified here.
@@ -221,12 +248,18 @@ class RDottedLineBorder extends BoxBorder {
       case BorderStyle.solid:
         paint.color = top.color;
         path.reset();
-        path.moveTo(rect.left, rect.top + top.width / 2);
-        path.lineTo(rect.right, rect.top + top.width / 2);
+        path.moveTo(rect.left, rect.top);
+        path.lineTo(rect.right, rect.top);
         paint.style = PaintingStyle.stroke;
 
-        canvas.drawPath(_buildDashPath(path, dottedLength, dottedSpace),
-            paint..strokeWidth = top.width);
+        canvas.drawPath(
+          _buildDashPath(
+            path.shift(Offset(0, top.strokeOffset * -0.5)),
+            dottedLength,
+            dottedSpace,
+          ),
+          paint..strokeWidth = top.width,
+        );
         break;
       case BorderStyle.none:
         break;
@@ -240,8 +273,14 @@ class RDottedLineBorder extends BoxBorder {
         path.lineTo(rect.right, rect.bottom);
         paint.style = PaintingStyle.stroke;
 
-        canvas.drawPath(_buildDashPath(path, dottedLength, dottedSpace),
-            paint..strokeWidth = right.width);
+        canvas.drawPath(
+          _buildDashPath(
+            path.shift(Offset(right.strokeOffset * 0.5, 0)),
+            dottedLength,
+            dottedSpace,
+          ),
+          paint..strokeWidth = right.width,
+        );
         break;
       case BorderStyle.none:
         break;
@@ -254,8 +293,15 @@ class RDottedLineBorder extends BoxBorder {
         path.moveTo(rect.right, rect.bottom);
         path.lineTo(rect.left, rect.bottom);
         paint.style = PaintingStyle.stroke;
-        canvas.drawPath(_buildDashPath(path, dottedLength, dottedSpace),
-            paint..strokeWidth = bottom.width);
+
+        canvas.drawPath(
+          _buildDashPath(
+            path.shift(Offset(0, bottom.strokeOffset * 0.5)),
+            dottedLength,
+            dottedSpace,
+          ),
+          paint..strokeWidth = bottom.width,
+        );
         break;
       case BorderStyle.none:
         break;
@@ -265,11 +311,17 @@ class RDottedLineBorder extends BoxBorder {
       case BorderStyle.solid:
         paint.color = left.color;
         path.reset();
-        path.moveTo(rect.left + left.width / 2, rect.bottom);
-        path.lineTo(rect.left + left.width / 2, rect.top);
+        path.moveTo(rect.left, rect.bottom);
+        path.lineTo(rect.left, rect.top);
         paint.style = PaintingStyle.stroke;
-        canvas.drawPath(_buildDashPath(path, dottedLength, dottedSpace),
-            paint..strokeWidth = left.width);
+        canvas.drawPath(
+          _buildDashPath(
+            path.shift(Offset(left.strokeOffset * -0.5, 0)),
+            dottedLength,
+            dottedSpace,
+          ),
+          paint..strokeWidth = left.width,
+        );
         break;
       case BorderStyle.none:
         break;
@@ -279,7 +331,7 @@ class RDottedLineBorder extends BoxBorder {
   Path _buildDashPath(Path path, double dottedLength, double dottedSpace) {
     final Path r = Path();
     for (PathMetric metric in path.computeMetrics()) {
-      double start = 0.0;
+      double start = 0;
       while (start < metric.length) {
         double end = start + dottedLength;
         r.addPath(metric.extractPath(start, end), Offset.zero);
